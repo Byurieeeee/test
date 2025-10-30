@@ -1,14 +1,184 @@
-<html>
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-<title> 옥선아 연습용</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간단한 투두리스트</title>
+    <style>
+        /* --- CSS 스타일 시작 --- */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 50px;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #input-area {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        #todo-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        #add-btn {
+            padding: 10px 15px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        #add-btn:hover {
+            background-color: #4cae4c;
+        }
+
+        #todo-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        #todo-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 5px solid #007bff;
+            transition: background-color 0.3s;
+            word-break: break-word; /* 긴 단어 처리 */
+        }
+
+        #todo-list li.completed {
+            background-color: #e6ffe6;
+            border-left: 5px solid #28a745;
+            text-decoration: line-through;
+            color: #777;
+        }
+
+        .todo-text {
+            flex-grow: 1;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        /* --- CSS 스타일 끝 --- */
+    </style>
 </head>
-
 <body>
-안녕하세요
-<h1>안녕하세요</h1>
-<h4>안녕하세요</h4>
-<p>안녕하세요</p>
+
+    <div class="container">
+        <h1>✅ 나의 할 일 목록</h1>
+
+        <div id="input-area">
+            <input type="text" id="todo-input" placeholder="새로운 할 일을 입력하세요">
+            <button id="add-btn">추가</button>
+        </div>
+
+        <ul id="todo-list">
+            </ul>
+    </div>
+
+    <script>
+        // --- JavaScript 코드 시작 ---
+
+        const todoInput = document.getElementById('todo-input');
+        const addBtn = document.getElementById('add-btn');
+        const todoList = document.getElementById('todo-list');
+
+        // '추가' 버튼 클릭 이벤트 리스너
+        addBtn.addEventListener('click', addTodo);
+        
+        // Enter 키 입력 이벤트 리스너
+        todoInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTodo();
+            }
+        });
+
+        function addTodo() {
+            const todoText = todoInput.value.trim();
+
+            if (todoText === "") {
+                alert("할 일을 입력해주세요!");
+                return;
+            }
+
+            // 새로운 리스트 아이템 생성
+            const listItem = document.createElement('li');
+            
+            // 텍스트 부분 생성 및 클릭 이벤트 추가 (완료/미완료 토글)
+            const textSpan = document.createElement('span');
+            textSpan.textContent = todoText;
+            textSpan.className = 'todo-text';
+            textSpan.addEventListener('click', function() {
+                listItem.classList.toggle('completed');
+            });
+
+            // 삭제 버튼 생성
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '삭제';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.addEventListener('click', function() {
+                todoList.removeChild(listItem);
+            });
+
+            // 아이템에 텍스트와 버튼 추가
+            listItem.appendChild(textSpan);
+            listItem.appendChild(deleteBtn);
+
+            // 목록에 아이템 추가
+            todoList.appendChild(listItem);
+
+            // 입력 필드 초기화
+            todoInput.value = '';
+            todoInput.focus();
+        }
+
+        // --- JavaScript 코드 끝 ---
+    </script>
 </body>
-
-
 </html>
