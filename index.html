@@ -2,62 +2,84 @@
 <html>
 <head>
     <title>🌟 인공지능 예측 놀이 🌟</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* 예쁘게 보이도록 스타일을 추가해요! */
+        /* 🎨 디자인 스타일 */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f0f8ff; /* 연한 하늘색 배경 */
             text-align: center;
             padding: 20px;
             color: #333;
+            margin: 0;
         }
 
         h1 {
             color: #ff6347; /* 밝은 주황색 제목 */
+            margin-bottom: 15px;
+            font-size: 2.5em; 
+        }
+
+        p {
+            font-size: 1.1em;
             margin-bottom: 30px;
-            font-size: 2.5em; /* 제목을 크게 */
         }
 
         #main-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 25px;
         }
 
         #webcam-area {
-            background-color: #ffffff; /* 하얀색 배경 */
-            border: 5px solid #4682b4; /* 파란색 테두리 */
-            border-radius: 15px; /* 둥근 모서리 */
+            background-color: #ffffff; 
+            border: 6px solid #4682b4; /* 파란색 테두리 */
+            border-radius: 20px; 
             padding: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* 부드러운 그림자 */
+            min-height: 220px; /* 로딩 메시지 공간 확보 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #webcam-container canvas {
+            border-radius: 10px;
         }
 
         #label-area {
             background-color: #fffacd; /* 레몬색 배경 */
-            border: 3px solid #daa520; /* 황금색 테두리 */
-            border-radius: 10px;
-            padding: 15px;
-            width: 80%;
-            max-width: 400px;
-            font-size: 1.2em; /* 글자 크기 키우기 */
+            border: 4px solid #daa520; /* 황금색 테두리 */
+            border-radius: 15px;
+            padding: 20px;
+            width: 90%;
+            max-width: 450px;
+            font-size: 1.2em; 
             text-align: left;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .prediction-label {
-            margin: 5px 0;
+            margin: 10px 0;
             padding: 8px;
             border-bottom: 1px dashed #ccc;
             font-weight: bold;
         }
+        
+        .prediction-label:last-child {
+            border-bottom: none; /* 마지막 줄에는 점선 없애기 */
+        }
 
         #loading-message {
             color: #4682b4;
-            font-size: 1.5em;
+            font-size: 1.6em;
             font-weight: bold;
+            padding: 20px;
         }
     </style>
 </head>
+
 <body onload="init()">
     <h1>🌟 인공지능 친구의 예측 놀이! 🌟</h1>
     <p>👀 카메라 앞에 물건을 보여주세요! 인공지능이 무엇인지 맞힐 거예요!</p>
@@ -78,8 +100,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
     <script type="text/javascript">
-        // 모델 파일의 주소를 알려줘요
-        const URL = "./my_model/"; // 꼭 './my_model/' 폴더가 같은 곳에 있어야 해요!
+        // 모델 파일의 주소를 알려줘요. (HTML 파일과 같은 위치에 'my_model' 폴더가 있어야 해요!)
+        const URL = "./my_model/";
 
         let model, webcam, labelContainer, maxPredictions;
 
@@ -91,17 +113,31 @@
             const modelURL = URL + "model.json";
             const metadataURL = URL + "metadata.json";
 
-            // 모델을 불러와요!
-            model = await tmImage.load(modelURL, metadataURL);
+            // 모델을 불러와요! (인터넷 속도에 따라 시간이 걸릴 수 있어요)
+            try {
+                model = await tmImage.load(modelURL, metadataURL);
+            } catch (e) {
+                document.getElementById("loading-message").innerHTML = "❌ 모델 파일을 찾을 수 없어요. 'my_model' 폴더가 있는지 확인해주세요!";
+                console.error("Model loading failed:", e);
+                return; // 모델 로딩 실패 시 여기서 멈춤
+            }
+            
             maxPredictions = model.getTotalClasses();
 
             // 카메라를 켜요!
-            const flip = true; // 좌우를 바꿀까요? 네!
-            webcam = new tmImage.Webcam(200, 200, flip); // 크기: 200x200
-            await webcam.setup(); // 카메라 권한을 요청해요
-            await webcam.play();
+            const flip = true; // 좌우 반전
+            webcam = new tmImage.Webcam(200, 200, flip); 
+            
+            try {
+                await webcam.setup(); // 카메라 권한 요청 및 설정
+                await webcam.play();
+            } catch (e) {
+                document.getElementById("loading-message").innerHTML = "🚨 카메라를 켤 수 없어요! 브라우저에서 **카메라 사용을 허락**해주세요.";
+                console.error("Webcam setup failed:", e);
+                return; // 카메라 설정 실패 시 여기서 멈춤
+            }
 
-            // "준비 중" 메시지를 숨겨요
+            // 이제 "준비 중" 메시지를 숨겨요
             document.getElementById("loading-message").style.display = 'none';
 
             // 화면에 카메라 영상을 보여줘요
@@ -111,7 +147,7 @@
             labelContainer = document.getElementById("label-container");
             for (let i = 0; i < maxPredictions; i++) {
                 const predictionDiv = document.createElement("div");
-                predictionDiv.classList.add("prediction-label"); // CSS 스타일을 적용해요
+                predictionDiv.classList.add("prediction-label");
                 labelContainer.appendChild(predictionDiv);
             }
 
@@ -133,16 +169,18 @@
 
             // 결과를 하나씩 보여줘요
             for (let i = 0; i < maxPredictions; i++) {
-                // 예측 이름과 몇 % 믿는지 숫자를 보여줘요 (소수점 두 자리까지)
-                const percent = (prediction[i].probability * 100).toFixed(0); // 백분율로 만들고 소수점을 없애요
-                let emoji = "🤔"; // 기본 이모지
+                // 백분율로 만들고 소수점을 없애요
+                const percent = (prediction[i].probability * 100).toFixed(0); 
+                let emoji = "🤔"; // 기본 이모지 (잘 모르겠어)
 
-                if (prediction[i].probability > 0.80) {
-                    emoji = "🎯"; // 80% 이상: 아주 확실해!
-                } else if (prediction[i].probability > 0.50) {
-                    emoji = "💡"; // 50% 이상: 아마도 이거야!
+                // 확신 정도에 따라 다른 이모지를 보여줘요
+                if (prediction[i].probability > 0.85) {
+                    emoji = "🎯"; // 85% 이상: 아주 확실해!
+                } else if (prediction[i].probability > 0.60) {
+                    emoji = "💡"; // 60% 이상: 아마도 이거야!
                 }
 
+                // 예측 결과와 백분율을 합쳐서 보여줘요
                 const classPrediction = `${emoji} **${prediction[i].className}**: ${percent}%`;
 
                 // 결과를 화면에 보여줘요
